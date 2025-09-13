@@ -60,20 +60,22 @@ const Category = ({route}) => {
             <ImageBackground source={{uri: categoryImage.url}} style={styles.coverArt}></ImageBackground> 
             
             <View style={styles.playlistsContainer}>
-              {playlists.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity style={{width: 120, margin: 10}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
-                    {item.images  ? (
-                      <>
-                        <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{item.description}</Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: '#fff' }}>{item.name}</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
+              {playlists
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <View key={index}>
+                    <TouchableOpacity style={{width: 120, margin: 10}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
+                      {item.images  ? (
+                        <>
+                          <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{item.description}</Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: '#fff' }}>{item.name}</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
               ))}
             </View>
           </ScrollView>

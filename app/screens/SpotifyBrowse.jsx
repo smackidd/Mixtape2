@@ -48,16 +48,16 @@ const SpotifyBrowse = () => {
       const savedAlbums = await getUsersSavedAlbums();
       const userPlaylists = await getUsersPlaylists();
       const browseCategories = await getBrowseCategories();
-      //const moodPlaylists = await getCategoryPlaylists("Decades");
-      //const moreMoodPlaylists = await getSingleBrowseCategoryWithId("mood");
+      const moodPlaylists = await getCategoryPlaylists("Decades");
+      const moreMoodPlaylists = await getSingleBrowseCategoryWithId("mood");
       setUserProfile(profile);
       setUserFollowedArtists(followedArtists);
       setUserSavedAlbums(savedAlbums);
       setUserPlaylists(userPlaylists);
       setBrowseCategories(browseCategories);
       setLoading(false);
-      //setMoodPlaylists(moodPlaylists);
-      //setMoreMoodPlaylists(moreMoodPlaylists);
+      setMoodPlaylists(moodPlaylists);
+      setMoreMoodPlaylists(moreMoodPlaylists);
     } catch(err) {
       console.log(err.message);
     } finally {
@@ -175,19 +175,21 @@ const SpotifyBrowse = () => {
         ) : (
           <View>
             <ScrollView horizontal onScroll={handleHorizontalScroll}>
-              {userFollowedArtists.artists.items.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity  style={{width: 120, alignItems: 'center'}} onPress={() => getArtist(item.id)}>
-                    {item.images && item.images.length > 2 && item.images[2].url ? (
-                      <>
-                        <Image source={{ uri: item.images[item.images.length - 1].url }} style={styles.artistImage} />
-                        <Text style={{color: "#fff"}}>{item.name}</Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: '#fff' }}>{item.name}</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
+              {userFollowedArtists?.artists?.items
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <View key={index}>
+                    <TouchableOpacity  style={{width: 120, alignItems: 'center'}} onPress={() => getArtist(item.id)}>
+                      {item.images && item.images.length > 2 && item.images[2].url ? (
+                        <>
+                          <Image source={{ uri: item.images[item.images.length - 1].url }} style={styles.artistImage} />
+                          <Text style={{color: "#fff"}}>{item.name}</Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: '#fff' }}>{item.name}</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
               ))}
             </ScrollView>
           </View>
@@ -209,20 +211,22 @@ const SpotifyBrowse = () => {
         ) : (
           <View>
             <ScrollView horizontal onScroll={handleHorizontalScroll}>
-              {userSavedAlbums.items.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getAlbum(item.album.id)}>
-                    {item.album.images  ? (
-                      <>
-                        <Image source={{ uri: item.album.images[0].url }} style={styles.albumImage} />
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.album.name}</Text>
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{artistsNames(item.album.artists)}</Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: '#fff' }}>{item.album.name}</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
+              {userSavedAlbums?.items
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <View key={index}>
+                    <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getAlbum(item.album.id)}>
+                      {item.album.images  ? (
+                        <>
+                          <Image source={{ uri: item.album.images[0].url }} style={styles.albumImage} />
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.album.name}</Text>
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{artistsNames(item.album.artists)}</Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: '#fff' }}>{item.album.name}</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
               ))}
             </ScrollView>
           </View>
@@ -242,20 +246,22 @@ const SpotifyBrowse = () => {
         ) : (
           <View>
             <ScrollView horizontal onScroll={handleHorizontalScroll}>
-              {userPlaylists.items.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
-                    {item.images  ? (
-                      <>
-                        <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{item.description}</Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: '#fff' }}>{item.name}</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>  
+              {userPlaylists?.items
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <View key={index}>
+                    <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
+                      {item.images  ? (
+                        <>
+                          <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{item.description}</Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: '#fff' }}>{item.name}</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>  
               ))}  
             </ScrollView>  
           </View>
@@ -277,19 +283,21 @@ const SpotifyBrowse = () => {
         ) : (
           <View>
             <ScrollView horizontal onScroll={handleHorizontalScroll}>
-              {browseCategories.categories.items.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getCategory(item.id, item.name, item.icons[0])}>
-                    {item.icons  ? (
-                      <>
-                        <Image source={{ uri: item.icons[0].url }} style={styles.albumImage} />
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: '#fff' }}>{item.name}</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>  
+              {browseCategories?.categories?.items
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <View key={index}>
+                    <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getCategory(item.id, item.name, item.icons[0])}>
+                      {item.icons  ? (
+                        <>
+                          <Image source={{ uri: item.icons[0].url }} style={styles.albumImage} />
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: '#fff' }}>{item.name}</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>  
               ))}  
             </ScrollView>  
           </View>
@@ -298,7 +306,7 @@ const SpotifyBrowse = () => {
 
         {/*Mood Playlists*/}
 
-        {/* <View style={styles.headersContainer} >
+        <View style={styles.headersContainer} >
             <Text style={styles.headers}>Mood</Text>
             <TouchableOpacity style={styles.chevron} onPress={getMoods}>
               <Text style={{ color: '#aaa', fontSize: 20 }}>More</Text>
@@ -310,25 +318,27 @@ const SpotifyBrowse = () => {
         ) : (
           <View>
             <ScrollView horizontal onScroll={handleHorizontalScroll}>
-              {moodPlaylists.playlists.items.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
-                    {item.images  ? (
-                      <>
-                        <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                        <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{item.description}</Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: '#fff' }}>{item.name}</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>  
+              {moodPlaylists?.playlists?.items
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <View key={index}>
+                    <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
+                      {item.images  ? (
+                        <>
+                          <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
+                          <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>{item.description}</Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: '#fff' }}>{item.name}</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>  
               ))}  
             </ScrollView>  
           </View>
           // </ScrollView>
-        )} */}
+        )}
 
       </ScrollView>
       

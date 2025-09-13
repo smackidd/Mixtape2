@@ -96,28 +96,32 @@ const Artist = ({route}) => {
           <ScrollView scrollEnabled={scrollEnabled} style={styles.scrollView}>
             <View style={styles.songList}>
               <Text style={styles.songListHeader}>Popular Songs</Text>
-              {artistsTopTracks.tracks.map((item, index) => (
-                <TouchableOpacity key={index} onPress={() => {
-                  navigation.getParent()?.goBack();
-                  navigation.navigate({
-                      name: "Mixtape",
-                      params: {
-                        screen: "Create",
-                        params: { selectedSong: item },
-                      },
-                      merge: true, // 🔑 merge with the existing screen instead of pushing
-                    });
-                  }
-                }>
-                    <SpotifySong song={item} />  
-                </TouchableOpacity>  
-              ))}
+              {artistsTopTracks?.tracks
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <TouchableOpacity key={index} onPress={() => {
+                    navigation.getParent()?.goBack();
+                    navigation.navigate({
+                        name: "Mixtape",
+                        params: {
+                          screen: "Create",
+                          params: { selectedSong: item },
+                        },
+                        merge: true, // 🔑 merge with the existing screen instead of pushing
+                      });
+                    }
+                  }>
+                      <SpotifySong song={item} />  
+                  </TouchableOpacity>  
+                ))}
               <Text style={styles.songListHeader}>Latest Releases</Text>
-              {artistsTopAlbums.items.map((item, index) => (
-                <TouchableOpacity key={index} onPress={() => {getAlbum(item.id)}}>
-                    <SpotifyAlbum album={item} />  
-                </TouchableOpacity>  
-              ))}
+              {artistsTopAlbums?.items
+                ?.filter(item => item)
+                .map((item, index) => (
+                  <TouchableOpacity key={index} onPress={() => {getAlbum(item.id)}}>
+                      <SpotifyAlbum album={item} />  
+                  </TouchableOpacity>  
+                ))}
               <View style={styles.discographyButton}>
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("SpotifyArtistAlbums", {artistId: artist.id})}>
                   <Text style={styles.buttonText}>See discography</Text>

@@ -51,23 +51,25 @@ const Album = ({route}) => {
                   <Text style={styles.artistName}>{album.artists[0].name}</Text>
                 </View>
                 <View>
-                  {album.tracks.items.map((item, index) => (
-                    <TouchableOpacity key={index} onPress={() => {
-                        navigation.getParent()?.goBack();
-                        navigation.navigate({
-                            name: "Mixtape",
-                            params: {
-                              screen: "Create",
-                              params: { selectedSong: item },
-                            },
-                            merge: true, // 🔑 merge with the existing screen instead of pushing
-                          });
-                          //navigation.getParent()?.goBack(); // close Album modal
-                        }
-                    }>
-                        <SpotifySong song={item} />  
-                    </TouchableOpacity>  
-                  ))}
+                  {album?.tracks?.items
+                    ?.filter(item => item)
+                    .map((item, index) => (
+                      <TouchableOpacity key={index} onPress={() => {
+                          navigation.getParent()?.goBack();
+                          navigation.navigate({
+                              name: "Mixtape",
+                              params: {
+                                screen: "Create",
+                                params: { selectedSong: item },
+                              },
+                              merge: true, // 🔑 merge with the existing screen instead of pushing
+                            });
+                            //navigation.getParent()?.goBack(); // close Album modal
+                          }
+                      }>
+                          <SpotifySong song={item} />  
+                      </TouchableOpacity>  
+                    ))}
                 </View>
                 
               </View>
