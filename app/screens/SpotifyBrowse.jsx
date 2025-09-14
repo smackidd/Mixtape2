@@ -38,32 +38,65 @@ const SpotifyBrowse = () => {
   //     ),
   //   });
   // }, [navigation]);
+
+  const CACHE_KEY = "spotifyBrowseCache";
+  const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
   
   const getBrowserData = async () => {
     try {
-      const profile = await getProfile(navigation); 
-      if (!profile) return; // stop here if 401 or failed  
-      await AsyncStorage.setItem('country', profile.country);
-      const followedArtists = await getUserFollowedArtists('', 20);
+      // Try cached data first
+      const cached = await AsyncStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { timestamp, data } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_TTL) {
+          console.log("Using cached browse data");
+          setUserProfile(data.profile);
+          setUserFollowedArtists(data.followedArtists);
+          setUserSavedAlbums(data.savedAlbums);
+          setUserPlaylists(data.userPlaylists);
+          setBrowseCategories(data.browseCategories);
+          setMoodPlaylists(data.moodPlaylists);
+          setMoreMoodPlaylists(data.moreMoodPlaylists);
+          setLoading(false);
+        }
+      }
+
+      // Fetch fresh data in background
+      const profile = await getProfile(navigation);
+      if (!profile) return;
+
+      await AsyncStorage.setItem("country", profile.country);
+      const followedArtists = await getUserFollowedArtists("", 20);
       const savedAlbums = await getUsersSavedAlbums();
       const userPlaylists = await getUsersPlaylists();
       const browseCategories = await getBrowseCategories();
       const moodPlaylists = await getCategoryPlaylists("Decades");
       const moreMoodPlaylists = await getSingleBrowseCategoryWithId("mood");
+
+      const newData = {
+        profile,
+        followedArtists,
+        savedAlbums,
+        userPlaylists,
+        browseCategories,
+        moodPlaylists,
+        moreMoodPlaylists,
+      };
+
+      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: newData }));
+
       setUserProfile(profile);
       setUserFollowedArtists(followedArtists);
       setUserSavedAlbums(savedAlbums);
       setUserPlaylists(userPlaylists);
       setBrowseCategories(browseCategories);
-      setLoading(false);
       setMoodPlaylists(moodPlaylists);
       setMoreMoodPlaylists(moreMoodPlaylists);
-    } catch(err) {
+      setLoading(false);
+    } catch (err) {
       console.log(err.message);
-    } finally {
-      
     }
-  }
+  };
 
   useEffect(() => {
     const fetchToken = async () => {
