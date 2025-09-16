@@ -1,13 +1,15 @@
-import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput } from 'react-native'
 import React, { useEffect, useState, useLayoutEffect } from 'react'
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from '@react-navigation/native'
 import BrowseHeader from '../../components/BrowseHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SpotifySong from '../../components/SpotifySong';
 import { getProfile } from '../../api_calls/Profile';
 import { getUserFollowedArtists } from '../../api_calls/Artists';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getUsersSavedAlbums } from '../../api_calls/Album';
+import { searchSpotify } from '../../api_calls/Search';
 import { getBrowseCategories, getCategoryPlaylists, getSingleBrowseCategoryWithId, getUsersPlaylists } from '../../api_calls/Playlists';
 
 
@@ -22,6 +24,39 @@ const SpotifyBrowse = () => {
   const [moreMoodPlaylists, setMoreMoodPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  // Expose controls to header
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Ionicons
+          name="search-outline"
+          size={24}
+          color="green"
+          style={{ marginRight: 10 }}
+          onPress={() => setSearchActive(!searchActive)}
+        />
+      ),
+    });
+  }, [navigation, searchActive]);
+
+  useEffect(() => {
+    if (!searchActive || !searchText) return;
+
+    const handler = setTimeout(async () => {
+      console.log("searching api", searchText);
+      const searchResults = await searchSpotify(searchText);
+      setSearchResults(searchResults);
+      // 👆 put your API call here
+    }, 500); // 1.5s debounce
+
+    return () => {
+      clearTimeout(handler); // cancel previous timeout if typing continues
+    };
+  }, [searchText]);
 
   const getToken = async () => {
     const token = await AsyncStorage.getItem('token');
@@ -194,6 +229,61 @@ const SpotifyBrowse = () => {
 
   return (
     <View style={styles.container} closeScreen={closeScreen}>
+      {searchActive && (
+        <TextInput
+          style={styles.searchBox}
+          placeholder="Search..."
+          value={searchText}
+          onChangeText={setSearchText}
+          returnKeyType="search"
+          onSubmitEditing={() => {
+            console.log("Search entered:", searchText);
+            //setSearchActive(false); // hide box
+          }}
+          autoFocus
+        />
+      )}
+      <ScrollView scrollEnabled={scrollEnabled} style={styles.scrollView}>
+        <View style={styles.songList}>
+          {searchResults?.tracks?.items
+            ?.filter(item => item)
+            .map((item, index) => (
+              <TouchableOpacity key={index} onPress={() => {
+                  navigation.getParent()?.goBack();
+                  navigation.navigate({
+                      name: "Mixtape",
+                      params: {
+                        screen: "Create",
+                        params: { selectedSong: item },
+                      },
+                      merge: true, // 🔑 merge with the existing screen instead of pushing
+                    });
+                    //navigation.getParent()?.goBack(); // close Album modal
+                  }
+              }>
+                  <SpotifySong song={item} />  
+              </TouchableOpacity>  
+            ))}
+        </View>
+        <View>
+          {searchResults?.artists?.items
+            ?.filter(item => item)
+            .map((item, index) => (
+              <View key={index}>
+                <TouchableOpacity  style={{width: 120, alignItems: 'center'}} onPress={() => getArtist(item.id)}>
+                  {item.images && item.images.length > 2 && item.images[2].url ? (
+                    <>
+                      <Image source={{ uri: item.images[item.images.length - 1].url }} style={styles.artistImage} />
+                      <Text style={{color: "#fff"}}>{item.name}</Text>
+                    </>
+                  ) : (
+                    <Text style={{ color: '#fff' }}>{item.name}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+          ))}
+        </View>
+      </ScrollView>
       {/* <BrowseHeader headerName="Explore" closeScreen={closeScreen} /> */}
       <ScrollView scrollEnabled={scrollEnabled} style={{marginBottom: 50 }}>
         <View style={styles.headersContainer} >
@@ -404,6 +494,9 @@ const styles = StyleSheet.create({
   chevron: {
     flexDirection: 'row',
   },
+  songList: {
+    padding: 10
+  },
   artistImage: {
     width: 100, // Adjust the width and height as needed
     height: 100,
@@ -414,6 +507,14 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 5
-  }
+  },
+  searchBox: {
+    backgroundColor: '#fff',
+    padding: 8,
+    margin: 8,
+    borderRadius: 8,
+    borderColor: '#ccc',
+    borderWidth: 1,
+  },
 
 })
