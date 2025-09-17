@@ -4,6 +4,7 @@ import { formatDuration } from '../helpers/SongDurationFormat';
 
 const SpotifySong = (props) => {
   const {song} = props;
+  const {type} = props;
   //console.log("Song", song);
   const artistsNames = (artists) => {
     if (!artists || artists.length === 0) {
@@ -27,7 +28,7 @@ const SpotifySong = (props) => {
           <View style={styles.songNameContainer}>
             <Text style={styles.songName}>{song.name}</Text>
           </View>
-          <Text style={styles.artistName} numberOfLines={1} ellipsizeMode="tail">{artistsNames(song.artists)}</Text>
+          <Text style={styles.artistName} numberOfLines={1} ellipsizeMode="tail">{type ? `${type} - ` + artistsNames(song.artists) : artistsNames(song.artists)}</Text>
         </View>
         <View>
           <Text style={styles.timeText}>{formatDuration(song.duration_ms)}</Text>
