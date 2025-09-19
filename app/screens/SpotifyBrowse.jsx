@@ -12,6 +12,9 @@ import { getUsersSavedAlbums } from '../../api_calls/Album';
 import { searchSpotify } from '../../api_calls/Search';
 import { getBrowseCategories, getCategoryPlaylists, getSingleBrowseCategoryWithId, getUsersPlaylists } from '../../api_calls/Playlists';
 import SearchResultsArtist from '../../components/SearchResults/SearchResultsArtist';
+import SearchResultsAlbums from '../../components/SearchResults/SearchResultsAlbums';
+import SearchResultsPlaylist from '../../components/SearchResults/SearchResultsPlaylist';
+import SearchResultsTracks from '../../components/SearchResults/SearchResultsTracks';
 
 
 const SpotifyBrowse = () => {
@@ -290,27 +293,7 @@ const SpotifyBrowse = () => {
           <ScrollView scrollEnabled={scrollEnabled} style={styles.scrollView}>
             {/* SearchResults: Tracks */}
             {(!activeFilter || activeFilter === "Song") && (
-              <View style={styles.songList}>
-                {searchResults?.tracks?.items
-                  ?.filter(item => item)
-                  .map((item, index) => (
-                    <TouchableOpacity key={index} onPress={() => {
-                        navigation.getParent()?.goBack();
-                        navigation.navigate({
-                            name: "Mixtape",
-                            params: {
-                              screen: "Create",
-                              params: { selectedSong: item },
-                            },
-                            merge: true, // 🔑 merge with the existing screen instead of pushing
-                          });
-                          //navigation.getParent()?.goBack(); // close Album modal
-                        }
-                    }>
-                        <SpotifySong song={item} type={"Song"}/>  
-                    </TouchableOpacity>  
-                  ))}
-              </View>
+              <SearchResultsTracks searchResults={searchResults} />  
             )}
             {/* SearchResults: Artists */}
             {(!activeFilter || activeFilter === "Artist") && (
@@ -318,47 +301,11 @@ const SpotifyBrowse = () => {
             )}
             {/* SearchResults: Albums */}
             {(!activeFilter || activeFilter === "Album") && (
-              <View>
-                {searchResults?.albums?.items
-                  ?.filter(item => item)
-                  .map((item, index) => (
-                    <View key={index}>
-                      <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getAlbum(item.id)}>
-                        {item.images  ? (
-                          <>
-                            <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
-                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>Album - {artistsNames(item.artists)}</Text>
-                          </>
-                        ) : (
-                          <Text style={{ color: '#fff' }}>{item.name}</Text>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                ))}
-              </View>
+              <SearchResultsAlbums searchResults={searchResults} getAlbum={getAlbum} />
             )}
             {/* SearchResults: Playlists */}
             {(!activeFilter || activeFilter === "Playlist") && (
-              <View>
-                {searchResults?.playlists?.items
-                  ?.filter(item => item)
-                  .map((item, index) => (
-                    <View key={index}>
-                      <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
-                        {item.images  ? (
-                          <>
-                            <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
-                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>Playlist - {item.description}</Text>
-                          </>
-                        ) : (
-                          <Text style={{ color: '#fff' }}>{item.name}</Text>
-                        )}
-                      </TouchableOpacity>
-                    </View>  
-                ))}  
-              </View>
+              <SearchResultsPlaylist searchResults={searchResults} getPlaylist={getPlaylist} />
             )}
           </ScrollView>
         </>
@@ -621,28 +568,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  artistContainer: {
+  playlistContainer: {
     flex: 1,
     flexDirection: 'row',
    
     marginBottom: 5,
     marginLeft: 5   
   },
-  artistRowImage: {
+  playlistRowImage: {
     height: 60,
     width: 60,
     margin: 5,
     marginHorizontal: 5
 
   },
-  artistRowContainer: {
+  playlistRowContainer: {
     justifyContent: 'center',
     width: '85%',
-   
   },
-  artistRowType: {
+  playlistRowType: {
     fontSize: 12,
     color: "#aaa",
-    width: '90%'
-  }
+    
+  }	
 })

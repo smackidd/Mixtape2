@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 
 const SearchResultsArtist = (props) => {
@@ -11,20 +11,20 @@ const SearchResultsArtist = (props) => {
 					.map((item, index) => (
 					<View key={index}>
 						<TouchableOpacity   onPress={() => getArtist(item.id)}>
-						{item.images && item.images.length > 2 && item.images[0].url ? (
-							<View style={styles.artistContainer}>
-							<View >
-								<Image source={{ uri: item.images[item.images.length - 1].url }} style={styles.artistRowImage} />
-							</View>
-							<View style={styles.artistRowContainer}>
-								<Text style={{color: "#fff"}}>{item.name}</Text>
-								
-								<Text style={styles.artistRowType}>Artist</Text>
-							</View>
-							</View>
-						) : (
-							<Text style={{ color: '#fff' }}>{item.name}</Text>
-						)}
+							{item.images && item.images.length > 2 && item.images[0].url ? (
+								<View style={styles.artistContainer}>
+									<View >
+										<Image source={{ uri: item.images[item.images.length - 1].url }} style={styles.artistRowImage} />
+									</View>
+									<View style={styles.artistRowContainer}>
+										<Text style={{color: "#fff", fontSize: 20}}>{item.name}</Text>
+										
+										<Text style={styles.artistRowType}>Artist</Text>
+									</View>
+								</View>
+							) : (
+								<Text style={{ color: '#fff' }}>{item.name}</Text>
+							)}
 						</TouchableOpacity>
 					</View>
 			))}
@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     height: 60,
     width: 60,
     margin: 5,
-    marginHorizontal: 5
-
+    marginHorizontal: 5,
+		borderRadius: 50
   },
   artistRowContainer: {
     justifyContent: 'center',
