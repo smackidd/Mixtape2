@@ -11,6 +11,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { getUsersSavedAlbums } from '../../api_calls/Album';
 import { searchSpotify } from '../../api_calls/Search';
 import { getBrowseCategories, getCategoryPlaylists, getSingleBrowseCategoryWithId, getUsersPlaylists } from '../../api_calls/Playlists';
+import SearchResultsArtist from '../../components/SearchResults/SearchResultsArtist';
 
 
 const SpotifyBrowse = () => {
@@ -27,6 +28,7 @@ const SpotifyBrowse = () => {
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [activeFilter, setActiveFilter] = useState(null);
 
   // Expose controls to header
   useLayoutEffect(() => {
@@ -57,6 +59,46 @@ const SpotifyBrowse = () => {
       clearTimeout(handler); // cancel previous timeout if typing continues
     };
   }, [searchText]);
+
+  // Render filter bubbles
+  const renderFilters = () => {
+    const filters = ["Song", "Artist", "Album", "Playlist"];
+
+    return (
+      <View style={{ height: 60 }}>   {/* ✅ keeps row stable */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ alignItems: "center", paddingHorizontal: 10 }}
+        >
+          {activeFilter ? (
+            <>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setActiveFilter(null)}
+              >
+                <Ionicons name="close" size={20} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.filterBubble, styles.activeBubble]}>
+                <Text style={{ color: "white" }}>{activeFilter}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            filters.map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={styles.filterBubble}
+                onPress={() => setActiveFilter(filter)}
+              >
+                <Text style={{ color: "white" }}>{filter}</Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+      </View>
+    );
+  };
+
 
   const getToken = async () => {
     const token = await AsyncStorage.getItem('token');
@@ -231,102 +273,96 @@ const SpotifyBrowse = () => {
     <View style={styles.container} closeScreen={closeScreen}>
       {/* SearchBox */}
       {searchActive && (
-        <TextInput
-          style={styles.searchBox}
-          placeholder="Search..."
-          value={searchText}
-          onChangeText={setSearchText}
-          returnKeyType="search"
-          onSubmitEditing={() => {
-            console.log("Search entered:", searchText);
-            //setSearchActive(false); // hide box
-          }}
-          autoFocus
-        />
+        <>
+          <TextInput
+            style={styles.searchBox}
+            placeholder="Search..."
+            value={searchText}
+            onChangeText={setSearchText}
+            returnKeyType="search"
+            onSubmitEditing={() => {
+              console.log("Search entered:", searchText);
+              //setSearchActive(false); // hide box
+            }}
+            autoFocus
+          />
+          {renderFilters()}
+          <ScrollView scrollEnabled={scrollEnabled} style={styles.scrollView}>
+            {/* SearchResults: Tracks */}
+            {(!activeFilter || activeFilter === "Song") && (
+              <View style={styles.songList}>
+                {searchResults?.tracks?.items
+                  ?.filter(item => item)
+                  .map((item, index) => (
+                    <TouchableOpacity key={index} onPress={() => {
+                        navigation.getParent()?.goBack();
+                        navigation.navigate({
+                            name: "Mixtape",
+                            params: {
+                              screen: "Create",
+                              params: { selectedSong: item },
+                            },
+                            merge: true, // 🔑 merge with the existing screen instead of pushing
+                          });
+                          //navigation.getParent()?.goBack(); // close Album modal
+                        }
+                    }>
+                        <SpotifySong song={item} type={"Song"}/>  
+                    </TouchableOpacity>  
+                  ))}
+              </View>
+            )}
+            {/* SearchResults: Artists */}
+            {(!activeFilter || activeFilter === "Artist") && (
+              <SearchResultsArtist searchResults={searchResults} getArtist={getArtist} />
+            )}
+            {/* SearchResults: Albums */}
+            {(!activeFilter || activeFilter === "Album") && (
+              <View>
+                {searchResults?.albums?.items
+                  ?.filter(item => item)
+                  .map((item, index) => (
+                    <View key={index}>
+                      <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getAlbum(item.id)}>
+                        {item.images  ? (
+                          <>
+                            <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
+                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
+                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>Album - {artistsNames(item.artists)}</Text>
+                          </>
+                        ) : (
+                          <Text style={{ color: '#fff' }}>{item.name}</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                ))}
+              </View>
+            )}
+            {/* SearchResults: Playlists */}
+            {(!activeFilter || activeFilter === "Playlist") && (
+              <View>
+                {searchResults?.playlists?.items
+                  ?.filter(item => item)
+                  .map((item, index) => (
+                    <View key={index}>
+                      <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
+                        {item.images  ? (
+                          <>
+                            <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
+                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
+                            <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>Playlist - {item.description}</Text>
+                          </>
+                        ) : (
+                          <Text style={{ color: '#fff' }}>{item.name}</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>  
+                ))}  
+              </View>
+            )}
+          </ScrollView>
+        </>
       )}
-      <ScrollView scrollEnabled={scrollEnabled} style={styles.scrollView}>
-        {/* SearchResults: Tracks */}
-        <View style={styles.songList}>
-          {searchResults?.tracks?.items
-            ?.filter(item => item)
-            .map((item, index) => (
-              <TouchableOpacity key={index} onPress={() => {
-                  navigation.getParent()?.goBack();
-                  navigation.navigate({
-                      name: "Mixtape",
-                      params: {
-                        screen: "Create",
-                        params: { selectedSong: item },
-                      },
-                      merge: true, // 🔑 merge with the existing screen instead of pushing
-                    });
-                    //navigation.getParent()?.goBack(); // close Album modal
-                  }
-              }>
-                  <SpotifySong song={item} type={"Song"}/>  
-              </TouchableOpacity>  
-            ))}
-        </View>
-        {/* SearchResults: Artists */}
-        <View>
-          {searchResults?.artists?.items
-            ?.filter(item => item)
-            .map((item, index) => (
-              <View key={index}>
-                <TouchableOpacity  style={{width: 120, alignItems: 'center'}} onPress={() => getArtist(item.id)}>
-                  {item.images && item.images.length > 2 && item.images[2].url ? (
-                    <>
-                      <Image source={{ uri: item.images[item.images.length - 1].url }} style={styles.artistImage} />
-                      <Text style={{color: "#fff"}}>{item.name}</Text>
-                    </>
-                  ) : (
-                    <Text style={{ color: '#fff' }}>{item.name}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-          ))}
-        </View>
-        {/* SearchResults: Albums */}
-        <View>
-          {searchResults?.albums?.items
-            ?.filter(item => item)
-            .map((item, index) => (
-              <View key={index}>
-                <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getAlbum(item.id)}>
-                  {item.images  ? (
-                    <>
-                      <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
-                      <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                      <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>Album - {artistsNames(item.artists)}</Text>
-                    </>
-                  ) : (
-                    <Text style={{ color: '#fff' }}>{item.name}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-          ))}
-        </View>
-        {/* SearchResults: Playlists */}
-        <View>
-          {searchResults?.playlists?.items
-            ?.filter(item => item)
-            .map((item, index) => (
-              <View key={index}>
-                <TouchableOpacity style={{width: 120, margin: 5}} onPress={() => getPlaylist(item.id, item.name, item.images[0])}>
-                  {item.images  ? (
-                    <>
-                      <Image source={{ uri: item.images[0].url }} style={styles.albumImage} />
-                      <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#fff"}}>{item.name}</Text>
-                      <Text numberOfLines={2} ellipsizeMode="tail" style={{color: "#aaa"}}>Playlist - {item.description}</Text>
-                    </>
-                  ) : (
-                    <Text style={{ color: '#fff' }}>{item.name}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>  
-          ))}  
-          </View>
-      </ScrollView>
       {/* <BrowseHeader headerName="Explore" closeScreen={closeScreen} /> */}
       <ScrollView scrollEnabled={scrollEnabled} style={{marginBottom: 50 }}>
         <View style={styles.headersContainer} >
@@ -518,11 +554,11 @@ export default SpotifyBrowse
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: '100%',
+    //height: '100%',
     backgroundColor: '#111'
   },
   scrollView: {
-    maxHeight: '100%',
+    minHeight: '100%',
     backgroundColor: '#000000'
   },
   
@@ -562,5 +598,51 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
   },
+  filterBubble: {
+    backgroundColor: "#444",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginHorizontal: 4,
+    marginBottom: 6,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
 
+  },
+  activeBubble: {
+    backgroundColor: "#1DB954", // Spotify Green
+  },
+  closeButton: {
+    backgroundColor: "#444",
+    borderRadius: 20,
+    padding: 6,
+    marginRight: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  artistContainer: {
+    flex: 1,
+    flexDirection: 'row',
+   
+    marginBottom: 5,
+    marginLeft: 5   
+  },
+  artistRowImage: {
+    height: 60,
+    width: 60,
+    margin: 5,
+    marginHorizontal: 5
+
+  },
+  artistRowContainer: {
+    justifyContent: 'center',
+    width: '85%',
+   
+  },
+  artistRowType: {
+    fontSize: 12,
+    color: "#aaa",
+    width: '90%'
+  }
 })
