@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-spotify-remote/android/build.gradle b/node_modules/react-native-spotify-remote/android/build.gradle
-index 381c0cf..da03926 100644
+index 381c0cf..d821196 100644
 --- a/node_modules/react-native-spotify-remote/android/build.gradle
 +++ b/node_modules/react-native-spotify-remote/android/build.gradle
-@@ -20,7 +20,7 @@ def safeExtGet(prop, fallback) {
+@@ -20,70 +20,51 @@ def safeExtGet(prop, fallback) {
  }
  
  apply plugin: 'com.android.library'
@@ -10,8 +10,22 @@ index 381c0cf..da03926 100644
 +apply plugin: 'maven-publish'
  
  buildscript {
-     // The Android Gradle plugin is only required when opening the android folder stand-alone.
-@@ -39,23 +39,27 @@ buildscript {
+-    // The Android Gradle plugin is only required when opening the android folder stand-alone.
+-    // This avoids unnecessary downloads and potential conflicts when the library is included as a
+-    // module dependency in an application project.
+-    // ref: https://docs.gradle.org/current/userguide/tutorial_using_tasks.html#sec:build_script_external_dependencies
+-    if (project == rootProject) {
+-        repositories {
+-            google()
+-            jcenter()
+-        }
+-        dependencies {
+-            classpath 'com.android.tools.build:gradle:3.4.1'
+-        }
++    repositories {
++        google()
++        mavenCentral()
+     }
  }
  
  apply plugin: 'com.android.library'
@@ -46,3 +60,34 @@ index 381c0cf..da03926 100644
      }
  }
  
+ repositories {
+-    // ref: https://www.baeldung.com/maven-local-repository
+-    mavenLocal()
+-    maven {
+-        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+-        url "$rootDir/../node_modules/react-native/android"
+-    }
+-    maven {
+-        // Android JSC is installed from npm
+-        url "$rootDir/../node_modules/jsc-android/dist"
+-    }
+     google()
+-    jcenter()
++    mavenCentral()
++    maven { url "https://jitpack.io" }
+ }
+ 
+ 
+ 
+ dependencies {
+-    def externalLibs = fileTree(dir: "$projectDir/external", include: '**/*.aar').collect()
+-    println("Adding external libraries ${externalLibs}")
+-    implementation files(externalLibs)
+-    implementation "com.google.code.gson:gson:2.8.5"  // needed by spotify-app-remote
+-    implementation project(path: ':react-native-events')  // From node_module
+-    //noinspection GradleDynamicVersion
+     implementation 'com.facebook.react:react-native:+'
++    implementation 'com.spotify.android:spotify-app-remote-release:0.7.2'
+ }
+ 
+ def configureReactNativePom(def pom) {
