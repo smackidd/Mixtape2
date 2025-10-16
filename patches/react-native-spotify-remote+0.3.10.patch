@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-spotify-remote/android/build.gradle b/node_modules/react-native-spotify-remote/android/build.gradle
-index 381c0cf..341e7fb 100644
+index 381c0cf..6843bfd 100644
 --- a/node_modules/react-native-spotify-remote/android/build.gradle
 +++ b/node_modules/react-native-spotify-remote/android/build.gradle
 @@ -1,211 +1,42 @@
@@ -105,7 +105,7 @@ index 381c0cf..341e7fb 100644
 -    implementation project(path: ':react-native-events')  // From node_module
 -    //noinspection GradleDynamicVersion
      implementation 'com.facebook.react:react-native:+'
-+    implementation 'com.spotify.android:spotify-app-remote-release:0.7.2'
++    implementation 'com.github.spotify:android-sdk:0.7.2@aar'
  }
 -
 -def configureReactNativePom(def pom) {
