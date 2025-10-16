@@ -1,0 +1,48 @@
+diff --git a/node_modules/react-native-spotify-remote/android/build.gradle b/node_modules/react-native-spotify-remote/android/build.gradle
+index 381c0cf..da03926 100644
+--- a/node_modules/react-native-spotify-remote/android/build.gradle
++++ b/node_modules/react-native-spotify-remote/android/build.gradle
+@@ -20,7 +20,7 @@ def safeExtGet(prop, fallback) {
+ }
+ 
+ apply plugin: 'com.android.library'
+-apply plugin: 'maven'
++apply plugin: 'maven-publish'
+ 
+ buildscript {
+     // The Android Gradle plugin is only required when opening the android folder stand-alone.
+@@ -39,23 +39,27 @@ buildscript {
+ }
+ 
+ apply plugin: 'com.android.library'
+-apply plugin: 'maven'
++apply plugin: 'maven-publish'
+ 
+ android {
+-    compileSdkVersion safeExtGet('compileSdkVersion', DEFAULT_COMPILE_SDK_VERSION)
+-    buildToolsVersion safeExtGet('buildToolsVersion', DEFAULT_BUILD_TOOLS_VERSION)
++    namespace "com.reactnativespotifyremote"
++    compileSdkVersion 34
++    buildToolsVersion "34.0.0"
++
+     defaultConfig {
+-        minSdkVersion safeExtGet('minSdkVersion', DEFAULT_MIN_SDK_VERSION)
+-        targetSdkVersion safeExtGet('targetSdkVersion', DEFAULT_TARGET_SDK_VERSION)
++        minSdkVersion 24
++        targetSdkVersion 34
+         versionCode 1
+         versionName "1.0"
+     }
++
+     lintOptions {
+         abortOnError false
+     }
++
+     compileOptions {
+-        sourceCompatibility = 1.8
+-        targetCompatibility = 1.8
++        sourceCompatibility JavaVersion.VERSION_1_8
++        targetCompatibility JavaVersion.VERSION_1_8
+     }
+ }
+ 
